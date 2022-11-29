@@ -17,13 +17,16 @@ import java.util.Optional;
  * @author Malte Kasolowsky <code>m30114</code>
  * @author Aaron Pöhlmann <code>m30115</code>
  */
+// TODO: remove suppression
+@SuppressWarnings({"unused", "FieldCanBeLocal", "RedundantThrows"})
 public class ReservationClient implements Reservation {
     private final Client client;
     private final URI baseURI;
 
     /**
+     * TODO
      *
-     * @param uri
+     * @param uri TODO
      */
     public ReservationClient(URI uri) {
         this.baseURI = Objects.requireNonNull(uri);
@@ -31,10 +34,11 @@ public class ReservationClient implements Reservation {
     }
 
     /**
+     * TODO
      *
      * @param seat Der Sitz, für welchen die Reservierung abgefragt werden soll
-     * @return
-     * @throws InvalidSeatException
+     * @return TODO
+     * @throws InvalidSeatException TODO
      */
     @Override
     public Optional<String> getReservation(Seat seat) throws InvalidSeatException {
@@ -42,10 +46,11 @@ public class ReservationClient implements Reservation {
     }
 
     /**
+     * TODO
      *
      * @param seat Der abzufragende Sitz
-     * @return
-     * @throws InvalidSeatException
+     * @return TODO
+     * @throws InvalidSeatException TODO
      */
     @Override
     public boolean hasReservation(Seat seat) throws InvalidSeatException {
@@ -53,11 +58,12 @@ public class ReservationClient implements Reservation {
     }
 
     /**
+     * TODO
      *
      * @param seat Der Sitz, welcher reserviert werden soll
      * @param name Der Name, auf den reserviert werden soll
-     * @return
-     * @throws InvalidSeatException
+     * @return TODO
+     * @throws InvalidSeatException TODO
      */
     @Override
     public boolean makeReservation(Seat seat, String name) throws InvalidSeatException {

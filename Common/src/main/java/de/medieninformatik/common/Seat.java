@@ -24,7 +24,9 @@ public record Seat(int row, int num) implements Comparable<Seat> {
      * ansonsten über die Reihe verglichen werden
      *
      * @param o the object to be compared.
-     * @return
+     * @return 0, wenn beide Sitze als gleich betrachtet werden,
+     * -1, wenn der eigene Sitz vor dem verglichenen Sitz liegt
+     * 1, wenn dieser danach liegt
      */
     @Override
     public int compareTo(Seat o) {

@@ -12,23 +12,27 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Rest-Endpoint des Servers
+ * TODO add a more specific implementation explanation
  *
  * @author Malte Kasolowsky <code>m30114</code>
  * @author Author Pöhlmann <code>m30115</code>
  */
 @Path("reservation")
 public class ReservationsRest {
-    ReservationsImpl reservation = new ReservationsImpl();
-    Response response;
+    private static final Logger LOGGER = Logger.getLogger("org.glassfish");
+    private final ReservationsImpl reservation = new ReservationsImpl();
 
     /**
+     * TODO
      *
-     * @param row
-     * @param num
-     * @return
+     * @param row TODO
+     * @param num TODO
+     * @return TODO
      */
     @GET
     @Path("{row}/{num}")
@@ -37,26 +41,24 @@ public class ReservationsRest {
             @PathParam("row") int row,
             @PathParam("num") int num) {
         System.out.println("GET " + row + ", " + num);
-        Seat seat = new Seat(row, num);
+        final var seat = new Seat(row, num);
         try {
             Optional<String> optional = reservation.getReservation(seat);
-            if (optional.isPresent()) {
-                response = Response.ok(seat.toString()).build();
-            } else {
-                response = Response.noContent().build();
-            }
+            return optional.isPresent()
+                    ? Response.ok(seat.toString()).build()
+                    : Response.noContent().build();
         } catch (InvalidSeatException e) {
-            response = Response.status(Response.Status.FORBIDDEN).build();
+            LOGGER.log(Level.SEVERE, "exception thrown when getting reservation", e);
+            return Response.status(Response.Status.FORBIDDEN).build();
         }
-        return response;
-        // TODO: Create response
     }
 
     /**
+     * TODO
      *
-     * @param row
-     * @param num
-     * @return
+     * @param row TODO
+     * @param num TODO
+     * @return TODO
      */
     @GET
     @Path("{row}/{num}")
@@ -64,21 +66,24 @@ public class ReservationsRest {
     public Response hasReservation(
             @PathParam("row") int row,
             @PathParam("num") int num) {
-        Seat seat = new Seat(row, num);
+        final var seat = new Seat(row, num);
         try {
-            response = Response.ok(reservation.hasReservation(seat)).build();
+            return Response.ok(
+                    reservation.hasReservation(seat) ? "seat has a reservation" : "seat has no reservation"
+            ).build();
         } catch (InvalidSeatException e) {
-            response = Response.status(Response.Status.NO_CONTENT).build();
+            LOGGER.log(Level.SEVERE, "exception thrown when checking reservation", e);
+            return Response.status(Response.Status.NO_CONTENT).build();
         }
-        return response; // TODO: Create response
     }
 
     /**
+     * TODO
      *
-     * @param row
-     * @param num
-     * @param name
-     * @return
+     * @param row TODO
+     * @param num TODO
+     * @param name TODO
+     * @return TODO
      */
     @POST
     @Path("{row}/{num}/{name}")
@@ -87,16 +92,14 @@ public class ReservationsRest {
             @PathParam("row") int row,
             @PathParam("num") int num,
             @PathParam("name") String name) {
-        Seat seat = new Seat(row, num);
+        final var seat = new Seat(row, num);
         try {
-            if (reservation.makeReservation(seat, name)) {
-                response = Response.ok().build();
-            } else {
-                response = Response.status(Response.Status.NOT_ACCEPTABLE).build();
-            }
+            return reservation.makeReservation(seat, name)
+                    ? Response.ok().build()
+                    : Response.status(Response.Status.NOT_ACCEPTABLE).build();
         } catch (InvalidSeatException e) {
-            response = Response.status(Response.Status.NOT_FOUND).build();
+            LOGGER.log(Level.SEVERE, "exception thrown when making reservation", e);
+            return Response.status(Response.Status.NOT_FOUND).build();
         }
-        return response; // TODO: Create response
     }
 }

@@ -25,7 +25,7 @@ public final class ClientMain {
      * @param args die URI, an welcher der client geöffnet werden soll; optional
      */
     public static void main(String[] args) {
-        var client = new ReservationClient(args.length > 0 ? URI.create(args[0]) : null);
+        var client = new ReservationClient(args.length > 0 ? URI.create(args[0]) : null); // TODO: URI
         var scanner = new Scanner(System.in, StandardCharsets.UTF_8);
         while (true) {
             try {

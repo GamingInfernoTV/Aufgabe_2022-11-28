@@ -54,7 +54,7 @@ public final class ReservationsImpl implements Reservation {
     }
 
     /**
-     * Prüft ob für den Sitz eine Reservierung vorliegt
+     * Prüft, ob für den Sitz eine Reservierung vorliegt
      *
      * @param seat Der abzufragende Sitz
      * @return true, wenn im Speicher eine Reservierung für den Sitz gefunden wurde, sonst false
