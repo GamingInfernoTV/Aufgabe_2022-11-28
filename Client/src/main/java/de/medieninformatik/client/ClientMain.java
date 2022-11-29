@@ -3,15 +3,29 @@ package de.medieninformatik.client;
 import de.medieninformatik.common.InvalidSeatException;
 import de.medieninformatik.common.Seat;
 
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Hauptklasse der clientseitigen Anwendung
+ *
+ * @author Malte Kasolowsky <code>m30114</code>
+ */
 public final class ClientMain {
+
+    /**
+     * Öffnet einen neuen {@link ReservationClient} am Pfad TODO
+     * und startet ein Eingabe-Programm über die Konsole,
+     * worüber Reservierungen abgefragt und erstellt werden können
+     *
+     * @param args die URI, an welcher der client geöffnet werden soll; optional
+     */
     public static void main(String[] args) {
-        var client = new ReservationClient(null);
+        var client = new ReservationClient(args.length > 0 ? URI.create(args[0]) : null);
         var scanner = new Scanner(System.in, StandardCharsets.UTF_8);
         while (true) {
             try {
@@ -33,6 +47,15 @@ public final class ClientMain {
         }
     }
 
+    /**
+     * Führt eine {@link ClientMain.Action} aus
+     *
+     * @param client  Der Client, für welche die Aktion ausgeführt werden soll
+     * @param scanner Der Scanner über den die Eingabe läuft
+     * @param action  Die Action, welche ausgeführt werden soll
+     * @throws InvalidSeatException Wenn bei der Eingabe eines Sitzes
+     *                              für diesen eine {@link InvalidSeatException} geworfen wurde
+     */
     private static void reservationAction(
             final ReservationClient client,
             final Scanner scanner,
@@ -58,9 +81,20 @@ public final class ClientMain {
         }
     }
 
+    /**
+     * Aufzählungen für Aktionen, welche vom User ausgeführt werden können
+     */
     private enum Action {
         GET, HAS, MAKE, NULL;
 
+        /**
+         * Liest eine Action aus einem String aus,
+         * wobei dieser in Lang- oder Kurzform und beliebigen Case vorliegen kann
+         *
+         * @param str Der String, welcher die Action beinhaltet
+         * @return Die Aktion, welche aus dem String ausgelesen wurde,
+         * oder {@link Action#NULL}, wenn keine Action gelesen werden konnte
+         */
         static Action fromString(String str) {
             return switch (str.toLowerCase(Locale.ROOT)) {
                 case ("get"), ("g") -> GET;
