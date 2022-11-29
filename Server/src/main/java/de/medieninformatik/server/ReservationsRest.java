@@ -26,7 +26,7 @@ public class ReservationsRest {
     @Produces(MediaType.TEXT_PLAIN)
     public Response hasReservation(
             @PathParam("row") int row,
-            @PathParam("nom") int num) {
+            @PathParam("num") int num) {
         return null; // TODO: Create response
     }
 
