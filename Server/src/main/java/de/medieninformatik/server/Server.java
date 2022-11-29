@@ -11,13 +11,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public final class Server {
+    private static final Logger LOGGER = Logger.getLogger("org.glassfish");
 
     private Server() {
     }
 
     public static void start(String uri) {
         try {
-            Logger.getLogger("org.glassfish").setLevel(Level.ALL);
+            LOGGER.setLevel(Level.ALL);
             URI baseURI = new URI(uri);
             ResourceConfig config = ResourceConfig.forApplicationClass(ReservationsApplication.class);
             HttpServer server = GrizzlyHttpServerFactory.createHttpServer(baseURI, config);
@@ -28,7 +29,7 @@ public final class Server {
             System.in.read();
             server.shutdown();
         } catch (IOException | URISyntaxException e) {
-            // TODO: Exception handling
+            LOGGER.log(Level.SEVERE, "Exception thrown during server start", e);
         }
     }
 }
