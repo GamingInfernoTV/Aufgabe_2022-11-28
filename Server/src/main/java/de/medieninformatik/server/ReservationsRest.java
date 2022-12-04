@@ -1,6 +1,7 @@
 package de.medieninformatik.server;
 
 import de.medieninformatik.common.InvalidSeatException;
+import de.medieninformatik.common.Reservation;
 import de.medieninformatik.common.Seat;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
@@ -25,7 +26,7 @@ import java.util.logging.Logger;
 @Path("reservation")
 public class ReservationsRest {
     private static final Logger LOGGER = Logger.getLogger("org.glassfish");
-    private final ReservationsImpl reservation = new ReservationsImpl();
+    private final Reservation reservation = new ReservationsImpl();
 
     /**
      * TODO
@@ -35,7 +36,7 @@ public class ReservationsRest {
      * @return TODO
      */
     @GET
-    @Path("{row}/{num}")
+    @Path("{row}/{num}/name")
     @Produces(MediaType.TEXT_PLAIN)
     public Response getReservation(
             @PathParam("row") int row,
@@ -61,7 +62,7 @@ public class ReservationsRest {
      * @return TODO
      */
     @GET
-    @Path("{row}/{num}")
+    @Path("{row}/{num}/check")
     @Produces(MediaType.TEXT_PLAIN)
     public Response hasReservation(
             @PathParam("row") int row,

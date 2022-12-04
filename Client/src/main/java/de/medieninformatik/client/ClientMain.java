@@ -1,6 +1,7 @@
 package de.medieninformatik.client;
 
 import de.medieninformatik.common.InvalidSeatException;
+import de.medieninformatik.common.Reservation;
 import de.medieninformatik.common.Seat;
 
 import java.net.URI;
@@ -57,7 +58,7 @@ public final class ClientMain {
      *                              für diesen eine {@link InvalidSeatException} geworfen wurde
      */
     private static void reservationAction(
-            final ReservationClient client,
+            final Reservation client,
             final Scanner scanner,
             final Action action
     ) throws InvalidSeatException {
