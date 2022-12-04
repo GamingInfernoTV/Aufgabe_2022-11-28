@@ -62,7 +62,7 @@ public final class ClientMain {
             final Scanner scanner,
             final Action action
     ) throws InvalidSeatException {
-        Seat seat = new Seat(scanner.nextInt(), scanner.nextInt());
+        var seat = new Seat(scanner.nextInt(), scanner.nextInt());
         switch (action) {
             case GET -> {
                 System.out.println("Getting reservation for: " + seat);
@@ -70,13 +70,13 @@ public final class ClientMain {
             }
             case HAS -> {
                 System.out.println("Checking reservation for: " + seat);
-                if (client.hasReservation(seat)) System.out.println("No reservation exist");
+                if (client.hasReservation(seat)) System.out.println("No reservation exists");
                 else System.out.println("Existing reservation found");
             }
             case MAKE -> {
                 String name = scanner.next();
                 if (client.makeReservation(seat, name)) System.out.println("Reservation has been made");
-                System.out.println("No reservation has been made");
+                else System.out.println("No reservation has been made");
             }
             case NULL -> throw new IllegalArgumentException("Action must not be null");
         }
