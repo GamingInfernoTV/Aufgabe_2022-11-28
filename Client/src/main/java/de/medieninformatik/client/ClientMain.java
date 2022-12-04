@@ -4,7 +4,9 @@ import de.medieninformatik.common.InvalidSeatException;
 import de.medieninformatik.common.Reservation;
 import de.medieninformatik.common.Seat;
 
+import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.Scanner;
@@ -25,8 +27,10 @@ public final class ClientMain {
      *
      * @param args die URI, an welcher der client geöffnet werden soll; optional
      */
-    public static void main(String[] args) {
-        var client = new ReservationClient(args.length > 0 ? URI.create(args[0]) : null); // TODO: URI
+    public static void main(String[] args) throws InvalidSeatException, URISyntaxException, IOException, InterruptedException {
+        URI BaseURI = new URI("http://localhost:8080/rest");
+        var client = new ReservationClient(args.length > 0 ? URI.create(args[0]) : BaseURI); // TODO: URI
+        System.out.println(client);
         var scanner = new Scanner(System.in, StandardCharsets.UTF_8);
         while (true) {
             try {
@@ -61,7 +65,7 @@ public final class ClientMain {
             final Reservation client,
             final Scanner scanner,
             final Action action
-    ) throws InvalidSeatException {
+    ) throws InvalidSeatException, URISyntaxException {
         var seat = new Seat(scanner.nextInt(), scanner.nextInt());
         switch (action) {
             case GET -> {

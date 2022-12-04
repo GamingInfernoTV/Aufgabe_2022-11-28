@@ -7,6 +7,6 @@ package de.medieninformatik.server;
  */
 public class ServerMain {
     public static void main(String[] args) {
-        Server.start(""); // TODO: URI
+        Server.start("http://0.0.0.0:8080/rest"); // TODO: URI
     }
 }

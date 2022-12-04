@@ -58,6 +58,7 @@ public class ReservationsRest {
         try {
             var seat = new Seat(row, num);
             var optional = reservation.getReservation(seat);
+            System.out.println(optional);
             return Response.status(
                     optional.isEmpty()
                             ? Response.Status.NO_CONTENT
