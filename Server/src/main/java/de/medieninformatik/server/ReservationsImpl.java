@@ -80,5 +80,17 @@ public final class ReservationsImpl implements Reservation {
         if (name == null || name.isBlank()) throw new IllegalArgumentException("name must not be null or blank");
         return Optional.ofNullable(RESERVATIONS_MAP.putIfAbsent(checkIndex(seat), name)).isEmpty();
     }
+
+    public String getAllReservations() {
+        var stringBuilder = new StringBuilder();
+        RESERVATIONS_MAP.forEach((Seat seat, String name) -> {
+            stringBuilder.append(seat);
+            stringBuilder.append(": ");
+            stringBuilder.append(name);
+            stringBuilder.append(';');
+            stringBuilder.append(System.lineSeparator());
+        });
+        return stringBuilder.toString();
+    }
 }
 

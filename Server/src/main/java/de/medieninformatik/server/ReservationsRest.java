@@ -7,12 +7,11 @@ import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -28,6 +27,21 @@ public class ReservationsRest {
     private static final Logger LOGGER = Logger.getLogger("org.glassfish");
     private final Reservation reservation = new ReservationsImpl();
 
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response getAllReservations() {
+        var s = ((ReservationsImpl) reservation).getAllReservations();
+        return Response.status(
+                s.isEmpty()
+                        ? Response.Status.NO_CONTENT
+                        : Response.Status.OK
+        ).entity(
+                s.isEmpty()
+                        ? "no reservations have been made yet"
+                        : s
+        ).build();
+    }
+
     /**
      * TODO
      *
@@ -36,21 +50,29 @@ public class ReservationsRest {
      * @return TODO
      */
     @GET
-    @Path("{row}/{num}/name")
+    @Path("get")
     @Produces(MediaType.TEXT_PLAIN)
     public Response getReservation(
-            @PathParam("row") int row,
-            @PathParam("num") int num) {
-        System.out.println("GET " + row + ", " + num);
-        final var seat = new Seat(row, num);
+            @QueryParam("row") int row,
+            @QueryParam("num") int num) {
         try {
-            Optional<String> optional = reservation.getReservation(seat);
-            return optional.isPresent()
-                    ? Response.ok(seat.toString()).build()
-                    : Response.noContent().build();
+            var seat = new Seat(row, num);
+            var optional = reservation.getReservation(seat);
+            return Response.status(
+                    optional.isEmpty()
+                            ? Response.Status.NO_CONTENT
+                            : Response.Status.OK
+            ).entity(
+                    optional
+                            .orElse("No reservation found for " + seat)
+            ).build();
         } catch (InvalidSeatException e) {
-            LOGGER.log(Level.SEVERE, "exception thrown when getting reservation", e);
-            return Response.status(Response.Status.FORBIDDEN).build();
+            LOGGER.log(Level.WARNING, "invalid seat exception thrown when getting reservation", e);
+            return Response.status(Response.Status.FORBIDDEN).entity(e.getLocalizedMessage()).build();
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "exception thrown when getting reservation", e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(e.getLocalizedMessage()).build();
         }
     }
 
@@ -62,19 +84,21 @@ public class ReservationsRest {
      * @return TODO
      */
     @GET
-    @Path("{row}/{num}/check")
+    @Path("check")
     @Produces(MediaType.TEXT_PLAIN)
     public Response hasReservation(
-            @PathParam("row") int row,
-            @PathParam("num") int num) {
-        final var seat = new Seat(row, num);
+            @QueryParam("row") int row,
+            @QueryParam("num") int num) {
         try {
-            return Response.ok(
-                    reservation.hasReservation(seat) ? "seat has a reservation" : "seat has no reservation"
-            ).build();
+            var seat = new Seat(row, num);
+            return Response.ok(reservation.hasReservation(seat)).build();
         } catch (InvalidSeatException e) {
-            LOGGER.log(Level.SEVERE, "exception thrown when checking reservation", e);
-            return Response.status(Response.Status.NO_CONTENT).build();
+            LOGGER.log(Level.WARNING, "invalid seat exception thrown when checking reservation", e);
+            return Response.status(Response.Status.FORBIDDEN).entity(e.getLocalizedMessage()).build();
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "exception thrown when checking reservation", e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(e.getLocalizedMessage()).build();
         }
     }
 
@@ -87,20 +111,31 @@ public class ReservationsRest {
      * @return TODO
      */
     @POST
-    @Path("{row}/{num}/{name}")
+    @Path("make")
     @Consumes(MediaType.TEXT_PLAIN)
     public Response makeReservation(
-            @PathParam("row") int row,
-            @PathParam("num") int num,
-            @PathParam("name") String name) {
-        final var seat = new Seat(row, num);
+            @QueryParam("row") int row,
+            @QueryParam("num") int num,
+            @QueryParam("name") String name) {
         try {
-            return reservation.makeReservation(seat, name)
-                    ? Response.ok().build()
-                    : Response.status(Response.Status.NOT_ACCEPTABLE).build();
+            var seat = new Seat(row, num);
+            var success = reservation.makeReservation(seat, name);
+            return Response.status(
+                    success
+                            ? Response.Status.OK
+                            : Response.Status.NOT_ACCEPTABLE
+            ).entity(
+                    success
+                            ? ("Made reservation for " + seat + " on: " + name)
+                            : (seat + " already has a reservation")
+            ).build();
         } catch (InvalidSeatException e) {
-            LOGGER.log(Level.SEVERE, "exception thrown when making reservation", e);
-            return Response.status(Response.Status.NOT_FOUND).build();
+            LOGGER.log(Level.WARNING, "invalid seat exception thrown when making reservation", e);
+            return Response.status(Response.Status.FORBIDDEN).entity(e.getLocalizedMessage()).build();
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "exception thrown when making reservation", e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(e.getLocalizedMessage()).build();
         }
     }
 }
