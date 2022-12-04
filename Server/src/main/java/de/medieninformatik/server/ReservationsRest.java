@@ -30,7 +30,7 @@ public class ReservationsRest {
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     public Response getAllReservations() {
-        var s = ((ReservationsImpl) reservation).getAllReservations();
+        var s = ReservationsImpl.getAllReservations();
         return Response.status(
                 s.isEmpty()
                         ? Response.Status.NO_CONTENT

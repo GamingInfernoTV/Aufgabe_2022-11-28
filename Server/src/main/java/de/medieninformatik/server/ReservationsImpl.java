@@ -81,7 +81,7 @@ public final class ReservationsImpl implements Reservation {
         return Optional.ofNullable(RESERVATIONS_MAP.putIfAbsent(checkIndex(seat), name)).isEmpty();
     }
 
-    public String getAllReservations() {
+    public static String getAllReservations() {
         var stringBuilder = new StringBuilder();
         RESERVATIONS_MAP.forEach((Seat seat, String name) -> {
             stringBuilder.append(seat);

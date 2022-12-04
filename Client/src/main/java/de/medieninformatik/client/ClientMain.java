@@ -66,7 +66,7 @@ public final class ClientMain {
         switch (action) {
             case GET -> {
                 System.out.println("Getting reservation for: " + seat);
-                System.out.println("Reservation: " + client.getReservation(seat));
+                System.out.println("Reservation: " + client.getReservation(seat).orElse("none"));
             }
             case HAS -> {
                 System.out.println("Checking reservation for: " + seat);
