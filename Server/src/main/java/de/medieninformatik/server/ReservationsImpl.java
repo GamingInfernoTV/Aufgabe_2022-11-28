@@ -33,8 +33,8 @@ public final class ReservationsImpl implements Reservation {
     private static Seat checkIndex(Seat seat) throws InvalidSeatException {
         try {
             if (seat == null) throw new IllegalArgumentException("seat must not be null");
-            Objects.checkIndex(seat.row(), NUM_OF_SEAT_ROWS);
-            Objects.checkIndex(seat.num(), NUM_OF_SEATS_PER_ROW);
+            Objects.checkFromToIndex(1, seat.row(), NUM_OF_SEAT_ROWS + 1);
+            Objects.checkFromToIndex(1, seat.num(), NUM_OF_SEATS_PER_ROW + 1);
         } catch (IllegalArgumentException | IndexOutOfBoundsException e) {
             throw new InvalidSeatException(seat, e);
         }
