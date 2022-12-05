@@ -1,5 +1,7 @@
 package de.medieninformatik.common;
 
+import java.util.regex.Pattern;
+
 /**
  * Datenstruktur zum Speichern eines Sitzes, welcher als Sitzreihe und Sitznummer in der Reihe definiert wird
  *
@@ -8,6 +10,20 @@ package de.medieninformatik.common;
  * @author Malte Kasolowsky <code>m30114</code>
  */
 public record Seat(int row, int num) implements Comparable<Seat> {
+    private static final Pattern SEAT_PATTERN = Pattern.compile("^Seat \\d+\\.\\d+$");
+
+    /**
+     * Erstellt einen {@link Seat} aus einem String
+     *
+     * @param s Der String, welcher in einen Seat umgewandelt werden soll
+     * @return Einen neuen Seat, sofern dieser umgewandelt werden konnte
+     */
+    public static Seat fromString(String s) {
+        if (!SEAT_PATTERN.matcher(s).matches()) {
+            var data = s.replace("Seat ", "").split("\\.");
+            return new Seat(Integer.parseInt(data[0]), Integer.parseInt(data[1]));
+        } else throw new IllegalArgumentException("string does not match the seat string format");
+    }
 
     /**
      * Definiert den Sitz als Zeichenkette

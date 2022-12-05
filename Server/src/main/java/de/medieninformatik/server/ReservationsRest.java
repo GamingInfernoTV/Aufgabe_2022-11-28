@@ -27,19 +27,30 @@ public class ReservationsRest {
     private static final Logger LOGGER = Logger.getLogger("org.glassfish");
     private final Reservation reservation = new ReservationsImpl();
 
+    /**
+     * Handler für das root-Verzeichnis der Klasse, welcher mit der Rückgabe aller Reservierungen antwortet
+     *
+     * @return Eine {@link Response}, welche die {@link java.util.Map} von {@link Reservation#getAllReservations()}
+     * als String verpackt beinhaltet und, wenn Reservierungen vorliegen, den Status {@link Response.Status#OK},
+     * ansonsten den Status {@link Response.Status#NO_CONTENT} hat
+     */
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     public Response getAllReservations() {
-        var s = ReservationsImpl.getAllReservations();
+        var stringBuilder = new StringBuilder();
+        reservation.getAllReservations().forEach((Seat seat, String name) -> {
+            stringBuilder.append(seat);
+            stringBuilder.append(": ");
+            stringBuilder.append(name);
+            stringBuilder.append(';');
+            stringBuilder.append(System.lineSeparator());
+        });
+        var s = stringBuilder.toString();
         return Response.status(
                 s.isEmpty()
                         ? Response.Status.NO_CONTENT
                         : Response.Status.OK
-        ).entity(
-                s.isEmpty()
-                        ? "no reservations have been made yet"
-                        : s
-        ).build();
+        ).entity(s).build();
     }
 
     /**
@@ -96,8 +107,8 @@ public class ReservationsRest {
     /**
      * TODO
      *
-     * @param row TODO
-     * @param num TODO
+     * @param row  TODO
+     * @param num  TODO
      * @param name TODO
      * @return TODO
      */

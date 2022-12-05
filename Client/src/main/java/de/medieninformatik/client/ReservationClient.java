@@ -12,8 +12,11 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
 
 import java.net.URI;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.TreeMap;
 
 /**
  * Clientseitige Implementierung von {@link Reservation};
@@ -38,6 +41,57 @@ public class ReservationClient implements Reservation {
     }
 
     /**
+     * Überprüft eine {@link Response} auf ihren Status; ist dieser gleich {@link Response.Status#FORBIDDEN},
+     * so wird eine neue {@link InvalidSeatException} ausgehend vom übergebenen {@link Seat} geworfen,
+     * da dieser Status bedeutet, dass bei der Verarbeitung der Anfrage auf dem Server ebenfalls eine
+     * InvalidSeatException geworfen wurde; wird eine
+     *
+     * @param response Die zu überprüfende {@link Response}
+     * @param seat     Der Seat, welcher Grund für die InvalidSeatException ist
+     * @throws InvalidSeatException  Wenn der Server mit FORBIDDEN antwortet
+     * @throws IllegalStateException Wenn der Server nicht mit einem Code zwischen 200 und 206 antwortet
+     */
+    private static void checkStatus(Response response, Seat seat) throws InvalidSeatException {
+        if (response.getStatus() == Response.Status.FORBIDDEN.getStatusCode()) {
+            throw new InvalidSeatException(seat, null);
+        }
+        if (response.getStatus() < Response.Status.OK.getStatusCode()
+            || response.getStatus() >= Response.Status.PARTIAL_CONTENT.getStatusCode()) {
+            throw new IllegalStateException("got invalid server response: " + response.getStatus());
+        }
+    }
+
+    /**
+     * Fragt alle Reservierungen vom Server an; da die Rückgabe ein String ist,
+     * wird dieser in eine {@link TreeMap} geparst
+     *
+     * @return Eine {@link Map},
+     * welche die {@link Seat Seats} mit den Namen, auf welche sie reserviert wurden, beinhaltet,
+     * oder eine leere Map, wenn der Server mit {@link Response.Status#NO_CONTENT} antwortet
+     */
+    @Override
+    public Map<Seat, String> getAllReservations() {
+        var target = client.target(baseURI);
+        try (var response = target.request().accept(MediaType.TEXT_PLAIN).get()) {
+            if (response.getStatus() == Response.Status.OK.getStatusCode()) {
+                var responseContent = response.readEntity(String.class);
+                responseContent = responseContent.replace("\r", "");
+                responseContent = responseContent.replace("\n", "");
+                var map = new TreeMap<Seat, String>();
+                for (String reservation : responseContent.split(";")) {
+                    var data = reservation.split(":");
+                    map.put(Seat.fromString(data[0]), data[1].strip());
+                }
+                return map;
+            } else if (response.getStatus() == Response.Status.NO_CONTENT.getStatusCode()) {
+                return Collections.emptyMap();
+            } else {
+                throw new IllegalStateException("got invalid server response: " + response.getStatus());
+            }
+        }
+    }
+
+    /**
      * TODO
      *
      * @param seat Der Sitz, für welchen die Reservierung abgefragt werden soll
@@ -47,9 +101,9 @@ public class ReservationClient implements Reservation {
     @Override
     public Optional<String> getReservation(Seat seat) throws InvalidSeatException {
         var target = getTarget("get", seat);
-        try (Response response = target.request().accept(MediaType.TEXT_PLAIN).get()) {
+        try (var response = target.request().accept(MediaType.TEXT_PLAIN).get()) {
             checkStatus(response, seat);
-            var name = response.readEntity(String.class);
+            var name = response.readEntity(String.class).strip();
             return Optional.ofNullable(name.isEmpty() ? null : name);
         }
     }
@@ -64,7 +118,7 @@ public class ReservationClient implements Reservation {
     @Override
     public boolean hasReservation(Seat seat) throws InvalidSeatException {
         var target = getTarget("check", seat);
-        try (Response response = target.request().accept(MediaType.TEXT_PLAIN).get()) {
+        try (var response = target.request().accept(MediaType.TEXT_PLAIN).get()) {
             checkStatus(response, seat);
             var responseContent = response.readEntity(String.class);
             return Boolean.parseBoolean(responseContent);
@@ -83,25 +137,10 @@ public class ReservationClient implements Reservation {
     public boolean makeReservation(Seat seat, String name) throws InvalidSeatException {
         var target = getTarget("make", seat);
         var entity = Entity.entity(name, MediaType.TEXT_PLAIN);
-        try (Response response = target.request().post(entity)) {
+        try (var response = target.request().accept(MediaType.TEXT_PLAIN).post(entity)) {
             checkStatus(response, seat);
             var responseContent = response.readEntity(String.class);
             return Boolean.parseBoolean(responseContent);
-        }
-    }
-
-    /**
-     * Überprüft eine {@link Response} auf ihren Status; ist dieser gleich {@link Response.Status#FORBIDDEN},
-     * so wird eine neue {@link InvalidSeatException} ausgehend vom übergebenen {@link Seat} geworfen,
-     * da dieser Status bedeutet, dass bei der Verarbeitung der Anfrage auf dem Server ebenfalls eine
-     * InvalidSeatException geworfen wurde
-     *
-     * @param response Die zu überprüfende {@link Response}
-     * @param seat Der Seat, welcher Grund für die InvalidSeatException ist
-     */
-    private void checkStatus(Response response, Seat seat) throws InvalidSeatException {
-        if (response.getStatus() == Response.Status.FORBIDDEN.getStatusCode()) {
-            throw new InvalidSeatException(seat, null);
         }
     }
 

@@ -1,5 +1,6 @@
 package de.medieninformatik.common;
 
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -8,6 +9,15 @@ import java.util.Optional;
  * @author Malte Kasolowsky <code>m30114</code>
  */
 public interface Reservation {
+
+    /**
+     * Methode zur Abfrage aller gespeicherten Reservierungen
+     *
+     * @return Eine {@link Map},
+     * welche die {@link Seat Seats} mit den Namen, auf welche sie reserviert wurden, beinhaltet
+     */
+    Map<Seat, String> getAllReservations();
+
     /**
      * Methode zum Abfragen des Namens, auf den ein {@link Seat} reserviert wurde
      *

@@ -25,6 +25,7 @@ public final class ReservationsImpl implements Reservation {
      * Prüft, ob ein {@link Seat} in den Begrenzungen des Systems liegt,
      * genauer, ob der Seat nicht null ist und die Reihennummer kleiner als die maximale Reihennummer
      * und die Sitznummer in der Reihe kleiner als die maximale Sitznummer ist
+     *
      * @param seat Der zu prüfende Sitz
      * @return Der geprüfte Seat, sofern dieser valide ist
      * @throws InvalidSeatException Wenn der Sitz nicht dem System genügt
@@ -81,16 +82,15 @@ public final class ReservationsImpl implements Reservation {
         return Optional.ofNullable(RESERVATIONS_MAP.putIfAbsent(checkIndex(seat), name)).isEmpty();
     }
 
-    public static String getAllReservations() {
-        var stringBuilder = new StringBuilder();
-        RESERVATIONS_MAP.forEach((Seat seat, String name) -> {
-            stringBuilder.append(seat);
-            stringBuilder.append(": ");
-            stringBuilder.append(name);
-            stringBuilder.append(';');
-            stringBuilder.append(System.lineSeparator());
-        });
-        return stringBuilder.toString();
+    /**
+     * Gibt die unterliegende, statische {@link Map} mit den gespeicherten Reservierungen zurück
+     *
+     * @return Eine {@link Map},
+     * welche die {@link Seat Seats} mit den Namen, auf welche sie reserviert wurden, beinhaltet
+     */
+    @Override
+    public Map<Seat, String> getAllReservations() {
+        return RESERVATIONS_MAP;
     }
 }
 
