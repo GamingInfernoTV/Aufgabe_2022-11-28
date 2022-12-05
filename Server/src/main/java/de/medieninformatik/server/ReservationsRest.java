@@ -12,13 +12,12 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Rest-Endpoint des Servers; beinhaltet alle Methode, die in {@link ReservationsImpl} implementiert werden
- * TODO check all comments please, kuss
+ * Rest-Endpoint des Servers;
+ * verbindet alle Methoden von {@link ReservationsImpl} mit entsprechenden Pfaden am Server
  *
  * @author Malte Kasolowsky <code>m30114</code>
  * @author Author Pöhlmann <code>m30115</code>
@@ -125,6 +124,7 @@ public class ReservationsRest {
     @POST
     @Path("make")
     @Consumes(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.TEXT_PLAIN)
     public Response makeReservation(
             @QueryParam("row") int row,
             @QueryParam("num") int num,
