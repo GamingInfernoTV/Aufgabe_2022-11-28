@@ -42,7 +42,7 @@ public final class ReservationsImpl implements Reservation {
     }
 
     /**
-     * Liest den Namen, auf den Sitz reserviert wurde, aus dem Speicher
+     * Liest den Namen, auf dem Sitz, der reserviert wurde, aus dem Speicher
      *
      * @param seat Der Sitz, für welchen die Reservierung abgefragt werden soll
      * @return Ein {@link Optional}, welches den Namen, auf den Reserviert wurde, beinhaltet,

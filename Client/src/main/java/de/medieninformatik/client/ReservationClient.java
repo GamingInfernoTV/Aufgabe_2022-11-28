@@ -92,7 +92,7 @@ public class ReservationClient implements Reservation {
     }
 
     /**
-     * TODO
+     * Stellt eine anfrage zum Lesen des Namens, auf dem der {@link Seat} reserviert wurde, an den Server
      *
      * @param seat Der Sitz, für welchen die Reservierung abgefragt werden soll
      * @return Der Name, auf den der Seat reserviert wurde
@@ -109,10 +109,10 @@ public class ReservationClient implements Reservation {
     }
 
     /**
-     * TODO
+     * Stellt eine Anfrage an der Server, ob der angefragt {@link Seat} bereits eine {@link Reservation} hat
      *
      * @param seat Der abzufragende Sitz
-     * @return TODO
+     * @return True, wenn der Sitz bereits reserviert wurde, false, wenn nicht
      * @throws InvalidSeatException Wenn ein {@link Seat} angegeben wird, welcher nicht vom Server akzeptiert wird
      */
     @Override
@@ -126,7 +126,9 @@ public class ReservationClient implements Reservation {
     }
 
     /**
-     * TODO
+     * Erstellt eine neue {@link Reservation},
+     * genauer speichert den Namen der Reservierung für den {@link Seat} im internen Speicher,
+     * sofern für den Sitz noch keine Reservierung vorliegt
      *
      * @param seat Der Sitz, welcher reserviert werden soll
      * @param name Der Name, auf den reserviert werden soll
@@ -145,11 +147,11 @@ public class ReservationClient implements Reservation {
     }
 
     /**
-     * TODO
+     * Erstellt die {@link URI} zu dem zu überprüfenden {@link Seat}
      *
-     * @param path TODO
-     * @param seat TODO
-     * @return TODO
+     * @param path Teil der URI welcher zwischen den einzelnen Methoden unterscheidet
+     * @param seat Teil der URI welcher zu dem gewünschten Sitz führt
+     * @return URI, welche die gewünschte Methode zu dem gewünschten Sitz führt
      */
     private WebTarget getTarget(String path, Seat seat) {
         var uri = UriBuilder.fromUri(baseURI)

@@ -12,12 +12,13 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Rest-Endpoint des Servers
- * TODO add a more specific implementation explanation
+ * Rest-Endpoint des Servers; beinhaltet alle Methode, die in {@link ReservationsImpl} implementiert werden
+ * TODO check all comments please, kuss
  *
  * @author Malte Kasolowsky <code>m30114</code>
  * @author Author Pöhlmann <code>m30115</code>
@@ -52,13 +53,14 @@ public class ReservationsRest {
                         : Response.Status.OK
         ).entity(s).build();
     }
-
     /**
-     * TODO
+     * Liest den Namen, auf den {@link Seat} der reserviert wurde, aus dem Speicher
      *
-     * @param row TODO
-     * @param num TODO
-     * @return TODO
+     * @param row Die Reihe des zu überprüfenden Sitzes
+     * @param num Die Nummer des zu überprüfenden Sitzes
+     * @return Eine {@link Response}, welche den Status der Anfrage sowie den Wert von {@link Reservation#getReservation(Seat)}
+     * beinhaltet, wenn eine {@link Reservation} vorliegt den Status {@link Response.Status#OK},
+     * ansonsten den Status {@link Response.Status#NO_CONTENT}
      */
     @GET
     @Path("get")
@@ -83,11 +85,14 @@ public class ReservationsRest {
     }
 
     /**
-     * TODO
+     * Überprüft, ob ein {@link Seat} bereits eine {@link Reservation} hat
      *
-     * @param row TODO
-     * @param num TODO
-     * @return TODO
+     * @param row Reihe des zu überprüfenden Sitzes
+     * @param num Nummer des zu überprüfenden Sitzes
+     * @return Eine {@link Response}, welche den Status der Anfrage sowie den Wert von {@link Reservation#hasReservation(Seat)}
+     * beinhaltet, wenn eine {@link Reservation} vorliegt den Status {@link Response.Status#OK},
+     * ansonsten wird eine {@link InvalidSeatException} in einem {@link Logger} gespeichert und
+     * der Status {@link Response.Status#FORBIDDEN}
      */
     @GET
     @Path("check")
@@ -105,12 +110,17 @@ public class ReservationsRest {
     }
 
     /**
-     * TODO
+     * Erstellt eine neue {@link Reservation},
+     * genauer speichert den Namen der Reservierung für den {@link Seat} im internen Speicher,
+     * sofern für den Sitz noch keine Reservierung vorliegt
      *
-     * @param row  TODO
-     * @param num  TODO
-     * @param name TODO
-     * @return TODO
+     * @param row Reihe des zu reservierenden Sitzes
+     * @param num  Nummer des zu reservierenden Sitzes
+     * @param name Der Name, auf dem reserviert werden soll
+     * @return Eine {@link Response}, welche den Status der Anfrage sowie den Wert von {@link Reservation#makeReservation(Seat, String)}
+     * beinhaltet, wenn die {@link Reservation} erfolgreich war den Status {@link Response.Status#OK},
+     * ansonsten wird eine {@link InvalidSeatException} in einem {@link Logger} gespeichert und
+     * der Status {@link Response.Status#FORBIDDEN}
      */
     @POST
     @Path("make")
