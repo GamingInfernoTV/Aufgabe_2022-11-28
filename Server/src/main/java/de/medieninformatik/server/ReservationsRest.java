@@ -58,22 +58,16 @@ public class ReservationsRest {
         try {
             var seat = new Seat(row, num);
             var optional = reservation.getReservation(seat);
-            System.out.println(optional);
             return Response.status(
                     optional.isEmpty()
                             ? Response.Status.NO_CONTENT
                             : Response.Status.OK
             ).entity(
-                    optional
-                            .orElse("No reservation found for " + seat)
+                    optional.orElse("No reservation found for " + seat)
             ).build();
         } catch (InvalidSeatException e) {
             LOGGER.log(Level.WARNING, "invalid seat exception thrown when getting reservation", e);
             return Response.status(Response.Status.FORBIDDEN).entity(e.getLocalizedMessage()).build();
-        } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "exception thrown when getting reservation", e);
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity(e.getLocalizedMessage()).build();
         }
     }
 
@@ -96,10 +90,6 @@ public class ReservationsRest {
         } catch (InvalidSeatException e) {
             LOGGER.log(Level.WARNING, "invalid seat exception thrown when checking reservation", e);
             return Response.status(Response.Status.FORBIDDEN).entity(e.getLocalizedMessage()).build();
-        } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "exception thrown when checking reservation", e);
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity(e.getLocalizedMessage()).build();
         }
     }
 
@@ -117,26 +107,14 @@ public class ReservationsRest {
     public Response makeReservation(
             @QueryParam("row") int row,
             @QueryParam("num") int num,
-            @QueryParam("name") String name) {
+            String name) {
         try {
             var seat = new Seat(row, num);
             var success = reservation.makeReservation(seat, name);
-            return Response.status(
-                    success
-                            ? Response.Status.OK
-                            : Response.Status.NOT_ACCEPTABLE
-            ).entity(
-                    success
-                            ? ("Made reservation for " + seat + " on: " + name)
-                            : (seat + " already has a reservation")
-            ).build();
+            return Response.ok(success).build();
         } catch (InvalidSeatException e) {
             LOGGER.log(Level.WARNING, "invalid seat exception thrown when making reservation", e);
             return Response.status(Response.Status.FORBIDDEN).entity(e.getLocalizedMessage()).build();
-        } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "exception thrown when making reservation", e);
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity(e.getLocalizedMessage()).build();
         }
     }
 }

@@ -4,14 +4,10 @@ import de.medieninformatik.common.InvalidSeatException;
 import de.medieninformatik.common.Reservation;
 import de.medieninformatik.common.Seat;
 
-import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.Scanner;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Hauptklasse der clientseitigen Anwendung
@@ -27,27 +23,27 @@ public final class ClientMain {
      *
      * @param args die URI, an welcher der client geöffnet werden soll; optional
      */
-    public static void main(String[] args) throws InvalidSeatException, URISyntaxException, IOException, InterruptedException {
-        URI BaseURI = new URI("http://localhost:8080/rest");
-        var client = new ReservationClient(args.length > 0 ? URI.create(args[0]) : BaseURI); // TODO: URI
-        System.out.println(client);
+    public static void main(String[] args) {
+        var client = new ReservationClient(
+                URI.create(args.length > 0
+                        ? args[0]
+                        : "http://localhost:8080/rest/reservation")
+        );
         var scanner = new Scanner(System.in, StandardCharsets.UTF_8);
         while (true) {
             try {
                 System.out.print("Enter action to execute: [ GET/g | HAS/h | MAKE/m ]: ");
-                Action action = Action.fromString(scanner.next());
-                System.out.println(switch (action) {
+                var action = Action.fromString(scanner.next());
+                System.out.print(switch (action) {
                     case GET -> "Enter seat [row, num] for getting the reservation from: ";
                     case HAS -> "Enter seat [row, num] to check on existing reservation: ";
                     case MAKE -> "Enter seat [row, num] and [name] to make reservation on: ";
-                    case NULL -> "No valid input, exiting";
+                    case NULL -> "No valid input, exiting" + System.lineSeparator();
                 });
                 if (action == Action.NULL) break;
                 reservationAction(client, scanner, action);
             } catch (InvalidSeatException e) {
-                Logger.getLogger("org.glassfish")
-                        .log(Level.SEVERE, "exception thrown from client", e);
-                System.exit(-1);
+                System.out.println(e.getLocalizedMessage());
             }
         }
     }
@@ -65,7 +61,7 @@ public final class ClientMain {
             final Reservation client,
             final Scanner scanner,
             final Action action
-    ) throws InvalidSeatException, URISyntaxException {
+    ) throws InvalidSeatException {
         var seat = new Seat(scanner.nextInt(), scanner.nextInt());
         switch (action) {
             case GET -> {
@@ -74,13 +70,19 @@ public final class ClientMain {
             }
             case HAS -> {
                 System.out.println("Checking reservation for: " + seat);
-                if (client.hasReservation(seat)) System.out.println("No reservation exists");
-                else System.out.println("Existing reservation found");
+                System.out.println(
+                        client.hasReservation(seat)
+                                ? "Existing reservation found"
+                                : "No reservation exists"
+                );
             }
             case MAKE -> {
-                String name = scanner.next();
-                if (client.makeReservation(seat, name)) System.out.println("Reservation has been made");
-                else System.out.println("No reservation has been made");
+                System.out.println("Making new reservation for: " + seat);
+                System.out.println(
+                        client.makeReservation(seat, scanner.next())
+                                ? "New reservation has been made"
+                                : "Seat already has a reservation. No new reservation has been made"
+                );
             }
             case NULL -> throw new IllegalArgumentException("Action must not be null");
         }

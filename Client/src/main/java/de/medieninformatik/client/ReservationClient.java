@@ -5,37 +5,32 @@ import de.medieninformatik.common.Reservation;
 import de.medieninformatik.common.Seat;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
 
-import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.util.Objects;
 import java.util.Optional;
 
 /**
- * Clientseitige Implementierung von {@link Reservation}
- * TODO: specify how the implementation works
+ * Clientseitige Implementierung von {@link Reservation};
+ * für jede Methode des Interfaces wird eine entsprechende Anfrage an einen Server gestellt
+ * und die zurückerhaltenden Werte verarbeitet
  *
  * @author Malte Kasolowsky <code>m30114</code>
  * @author Aaron Pöhlmann <code>m30115</code>
  */
-// TODO: remove suppression
-@SuppressWarnings({"unused", "FieldCanBeLocal", "RedundantThrows"})
 public class ReservationClient implements Reservation {
     private final Client client;
     private final URI baseURI;
-    private final HttpClient httpClient = HttpClient.newHttpClient();
 
     /**
-     * TODO
+     * Konstruktor; speichert die übergebene {@link URI} ab und erstellt einen neuen {@link Client}
      *
-     * @param uri TODO
+     * @param uri Die URI, über welche Anfragen an den Server gestellt werden
      */
     public ReservationClient(URI uri) {
         this.baseURI = Objects.requireNonNull(uri);
@@ -46,28 +41,17 @@ public class ReservationClient implements Reservation {
      * TODO
      *
      * @param seat Der Sitz, für welchen die Reservierung abgefragt werden soll
-     * @return TODO
-     * @throws InvalidSeatException TODO
+     * @return Der Name, auf den der Seat reserviert wurde
+     * @throws InvalidSeatException Wenn ein {@link Seat} angegeben wird, welcher nicht vom Server akzeptiert wird
      */
     @Override
     public Optional<String> getReservation(Seat seat) throws InvalidSeatException {
-        URI url = null;
-        try {
-            url = new URI(baseURI + "/reservation/get?row=" + seat.row()
-                    + "&num=" + seat.num());
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
+        var target = getTarget("get", seat);
+        try (Response response = target.request().accept(MediaType.TEXT_PLAIN).get()) {
+            checkStatus(response, seat);
+            var name = response.readEntity(String.class);
+            return Optional.ofNullable(name.isEmpty() ? null : name);
         }
-        HttpRequest getRequest = HttpRequest.newBuilder()
-                .uri(url)
-                .build();
-        WebTarget target = client.target(url);
-        Response response = target.request().accept(MediaType.TEXT_PLAIN).get();
-        if (status(response) == 200) {
-            String name = response.readEntity(String.class);
-            return Optional.ofNullable(name);
-        }
-        return Optional.empty(); // TODO: Make getReservation request
     }
 
     /**
@@ -75,65 +59,65 @@ public class ReservationClient implements Reservation {
      *
      * @param seat Der abzufragende Sitz
      * @return TODO
-     * @throws InvalidSeatException TODO
+     * @throws InvalidSeatException Wenn ein {@link Seat} angegeben wird, welcher nicht vom Server akzeptiert wird
      */
     @Override
     public boolean hasReservation(Seat seat) throws InvalidSeatException {
-        URI url = null;
-        try {
-            url = new URI(baseURI + "/reservation/check?row=" + seat.row()
-                    + "&num=" + seat.num());
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
+        var target = getTarget("check", seat);
+        try (Response response = target.request().accept(MediaType.TEXT_PLAIN).get()) {
+            checkStatus(response, seat);
+            var responseContent = response.readEntity(String.class);
+            return Boolean.parseBoolean(responseContent);
         }
-        HttpRequest hasRequest = HttpRequest.newBuilder()
-                .uri(url)
-                .build();
-        WebTarget target = client.target(url);
-        Response response = target.request().accept(MediaType.TEXT_PLAIN).get();
-        return false; // TODO: Make hasReservation request
     }
 
     /**
-     * Es kann einen {@link Seat} reservieren.
-     * Dazu wird die Sitzreihe (Row) und die Sitznummer (Num),
-     * sowie der Name angegeben auf den reserviert werden soll.
+     * TODO
      *
      * @param seat Der Sitz, welcher reserviert werden soll
      * @param name Der Name, auf den reserviert werden soll
-     * @return TODO
-     * @throws InvalidSeatException TODO
+     * @return true, wenn die {@link Seat} reservierung erfolgreich war, false, wenn nicht
+     * @throws InvalidSeatException Wenn ein {@link Seat} angegeben wird, welcher nicht vom Server akzeptiert wird
      */
     @Override
     public boolean makeReservation(Seat seat, String name) throws InvalidSeatException {
-        URI url = null;
-        String platzhalter = " ";
-        try {
-            url = new URI(baseURI +  "/reservation/make?row=" + seat.row()
-                    + "&num=" + seat.num()
-                    + "&name=" + name);
-            System.out.println(url);
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
+        var target = getTarget("make", seat);
+        var entity = Entity.entity(name, MediaType.TEXT_PLAIN);
+        try (Response response = target.request().post(entity)) {
+            checkStatus(response, seat);
+            var responseContent = response.readEntity(String.class);
+            return Boolean.parseBoolean(responseContent);
         }
-        HttpRequest makeRequest = HttpRequest.newBuilder()
-                .uri(url)
-                .POST(HttpRequest.BodyPublishers.ofString(platzhalter))
-                .build();
-        try {
-            HttpResponse<String> response = httpClient.send(makeRequest,
-                    HttpResponse.BodyHandlers.ofString());
-            System.out.println(response.body());
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-        }
-        return false; // TODO: Make makeReservation request
     }
 
-    private int status(Response response) {
-        int status = response.getStatus();
-        String reason = response.getStatusInfo().getReasonPhrase();
-        System.out.printf("Status: %d %s%n", status, reason);
-        return status;
+    /**
+     * Überprüft eine {@link Response} auf ihren Status; ist dieser gleich {@link Response.Status#FORBIDDEN},
+     * so wird eine neue {@link InvalidSeatException} ausgehend vom übergebenen {@link Seat} geworfen,
+     * da dieser Status bedeutet, dass bei der Verarbeitung der Anfrage auf dem Server ebenfalls eine
+     * InvalidSeatException geworfen wurde
+     *
+     * @param response Die zu überprüfende {@link Response}
+     * @param seat Der Seat, welcher Grund für die InvalidSeatException ist
+     */
+    private void checkStatus(Response response, Seat seat) throws InvalidSeatException {
+        if (response.getStatus() == Response.Status.FORBIDDEN.getStatusCode()) {
+            throw new InvalidSeatException(seat, null);
+        }
+    }
+
+    /**
+     * TODO
+     *
+     * @param path TODO
+     * @param seat TODO
+     * @return TODO
+     */
+    private WebTarget getTarget(String path, Seat seat) {
+        var uri = UriBuilder.fromUri(baseURI)
+                .path(path)
+                .queryParam("row", seat.row())
+                .queryParam("num", seat.num())
+                .build();
+        return client.target(uri);
     }
 }
